@@ -21,6 +21,7 @@ class CheckModulesTest : AutoCloseKoinTest() {
 
     class ComponentE(val c: ComponentC) : Component
     class MyFactory(val msg : String)
+    class ComponentF(val msg: String, component: ComponentA)
 
     @Test
     fun `successful check`() {
@@ -136,5 +137,19 @@ class CheckModulesTest : AutoCloseKoinTest() {
 
         assertDefinitions(1)
         assertRemainingInstanceHolders(1)
+    }
+
+    @Test
+    fun `module with parameters fails when dependency missing`() {
+        try {
+            checkModules(listOf(module {
+                single { (msg : String) -> ComponentF(msg, get()) }
+            }))
+            fail()
+        } catch (e: BrokenDefinitionException) {
+            System.err.println(e)
+        }
+
+        assertDefinitions(1)
     }
 }
